@@ -33,8 +33,14 @@ const server = http.createServer((req, res) => {
       res.end(userOperations.updateUser(JSON.parse(body)));
     });
   }
-});
-
-server.listen(port, hostname, () => {
+  else if (req.url === '/read' && req.method === 'GET') {
+    req.on('data', function (data) {
+      body += data;
+    });
+    req.on('end', function () {
+      res.end(userOperations.getUser(JSON.parse(body)));
+    });
+  }
+}).listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });

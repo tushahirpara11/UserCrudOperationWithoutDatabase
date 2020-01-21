@@ -1,93 +1,161 @@
 const fs = require('fs');
 const DB_FILE = 'userData.json';
-const userDataArray = [];
-let flag = 0;
 
-let rawData = fs.readFileSync(DB_FILE);
+let flag = 0, userRecord = '';
+const DB_RECORDS = JSON.parse(fs.readFileSync(DB_FILE));
 
-for (let i = 0; i < JSON.parse(rawData).length; i++) {
-	userDataArray.push(JSON.parse(rawData)[i]);
+const userDataArray = DB_RECORDS.map((element) => { return element; });
+
+function commonDisplay(statusCode, status, message, jsonData = "") {
+	let obj = {
+		statusCode: statusCode,
+		status: status,
+		message: message,
+		data: jsonData
+	}
+	return JSON.stringify(obj);
 }
+
+// function addUser(data) {
+// 	// let flag;
+// 	const parseData = JSON.parse(data);
+// 	DB_RECORDS.forEach(ele => {
+// 		flag = false;
+// 		console.log(ele.id, parseData.id)
+// 		if (ele.id === parseData.id) {
+// 			return commonDisplay("200", "OK", 'id already exist..!');
+// 		} else if (ele.email == parseData.email) {
+// 			return commonDisplay("200", "OK", 'email already exist..!');
+// 		} else if (ele.contact == parseData.contact) {
+// 			return commonDisplay("200", "OK", 'contact already exist..!');
+// 		}
+// 		if (ele.id !== parseData.id) {
+// 			if (ele.email !== parseData.email) {
+// 				if (ele.contact !== parseData.contact) {
+// 					flag = true;
+// 				}
+// 			}
+// 		}
+// 	});
+// 	if (flag == true) {
+// 		DB_RECORDS.push(parseData);
+// 		fs.writeFile(DB_FILE, JSON.stringify(DB_RECORDS), function (err) {
+// 			if (err) return commonDisplay("502", "Error", err);
+// 		});
+// 		return commonDisplay("200", "OK", 'User added successfully..!');
+// 	}
+// }
 
 function addUser(data) {
-
-	for (let i = 0; i < JSON.parse(rawData).length; i++) {
-		if (JSON.parse(rawData)[i].id == data.id) {
-			return 'id already exist..!';
-		} else if (JSON.parse(rawData)[i].email == data.email) {
-			return 'email already exist..!';
-		} else if (JSON.parse(rawData)[i].contact == data.contact) {
-			return 'contact already exist..!';
+	const parseData = JSON.parse(data);
+	let msg;
+	DB_RECORDS.forEach(ele => {
+		flag = false;
+		if (ele.id === parseData.id) {
+			msg = 'id already exist..!';
+		} else if (ele.email == parseData.email) {
+			msg = 'email already exist..!';
+		} else if (ele.contact == parseData.contact) {
+			msg = 'contact already exist..!';
 		}
-		if ((JSON.parse(rawData)[i].id !== data.id) && (JSON.parse(rawData)[i].email !== data.email) &&
-			(JSON.parse(rawData)[i].contact !== data.contact)) {
-			userDataArray.push(JSON.parse(data));
-			flag = 1;
-			break;
+		if (ele.id != parseData.id) {
+			if (ele.email != parseData.email) {
+				if (ele.contact != parseData.contact) {
+					flag = true;
+				}
+			}
 		}
-	}
-	if (flag == 1) {
+	})
+	if (flag) {
+		userDataArray.push(parseData);
 		fs.writeFile(DB_FILE, JSON.stringify(userDataArray), function (err) {
-			if (err) throw err;
-			return 'User added successfully..!';
+			if (err) return commonDisplay("502", "Error", err);
 		});
+		return commonDisplay(200, 'Ok', 'User added Successfully');
+	}
+	else {
+		return commonDisplay(200, 'Ok', msg);
 	}
 }
+
 
 function deleteUser(data) {
-	for (let i = 0; i < JSON.parse(rawData).length; i++) {
-		if (JSON.parse(rawData)[i].id == data["id"]) {
-			userDataArray.splice(rawData.indexOf(rawData[i]), 1);
+	DB_RECORDS.forEach((element) => {
+		if (element.id == data["id"]) {
+			userDataArray.splice(DB_RECORDS.indexOf(element), 1);
 			flag = 1;
-			break;
 		}
-	}
+	});
 	if (flag == 1) {
 		fs.writeFile(DB_FILE, JSON.stringify(userDataArray), function (err) {
-			if (err) throw err;
-			return 'User Deleted Successfully..!';
+			if (err) return commonDisplay("statusCode", "Error", err);
 		});
+		return commonDisplay("200", "OK", 'User Deleted Successfully..!');
 	}
 	else {
-		return "No User Found..!";
+		return commonDisplay("200", "OK", "No User Found..!");
 	}
 }
+
 function updateUser(data) {
-	for (let i = 0; i < JSON.parse(rawData).length; i++) {
-		console.log(data.id);
-		if (JSON.parse(rawData)[i].id == data.id) {
-			if (data.id != "") {
-				userDataArray[i].id = data.id;
-			}
-			if (data.userFirstName != "") {
-				userDataArray[i].userFirstName = data.userFirstName;
-			}
-			if (data.userLastName != "") {
-				userDataArray[i].userLastName = data.userLastName;
-			}
-			if (data.email != "") {
-				userDataArray[i].email = data.email;
-			}
-			if (data.contact != "") {
-				userDataArray[i].contact = data.contact;
-			}
+	DB_RECORDS.forEach((dbElement) => {
+		if (dbElement.id == data.id) {
+			Object.keys(data).forEach((dataKey) => {
+				if (dataKey == 'userFirstName') {
+					if (data.userFirstName != "") {
+						dbElement.userFirstName = data.userFirstName;
+					}
+				}
+				if (dataKey == 'userLastName') {
+					if (data.userLastName != "") {
+						dbElement.userLastName = data.userLastName;
+					}
+				}
+				if (dataKey == 'email') {
+					if (data.email != "") {
+						dbElement.email = data.email;
+					}
+				}
+				if (dataKey == 'contact') {
+					if (data.contact != "") {
+						dbElement.contact = data.contact;
+					}
+				}
+			});
 			flag = 1;
-			break;
 		}
-	}
+	});
 	if (flag == 1) {
 		fs.writeFile(DB_FILE, JSON.stringify(userDataArray), function (err) {
-			if (err) throw err;
-			return 'User Updated successfully..!';
+			if (err) return commonDisplay("502", "Error", err);
+
 		});
+		return commonDisplay("200", "OK", "User Updated successfully..!");
 	}
 	else {
-		return "No User Found..!";
+		return commonDisplay("200", "OK", "No User Found..!");
+	}
+}
+
+function getUser(data) {
+	DB_RECORDS.forEach((element) => {
+		if (element.id == data.id) {
+			userRecord = element;
+			flag = 1;
+		}
+	});
+	if (flag == 1) {
+		return commonDisplay("200", "OK", "Data Found", userRecord);
+	}
+	else {
+		return commonDisplay("200", "OK", "No User Found..!");
 	}
 }
 
 module.exports = {
 	addUser,
 	deleteUser,
-	updateUser
+	updateUser,
+	getUser,
+	commonDisplay
 }
