@@ -1,13 +1,13 @@
 const http = require('http');
+
 const userOperations = require('./userOperation');
 
 const hostname = '127.0.0.1';
 const port = 3000;
-let body = '';
-let post = '';
 
 const server = http.createServer((req, res) => {
   res.statusCode = 200;
+  let body = '';
   res.setHeader('Content-Type', 'text/JSON');
   if (req.url === '/add' && req.method == 'POST') {
     req.on('data', function (data) {

@@ -16,39 +16,10 @@ function commonDisplay(statusCode, status, message, jsonData = "") {
 	return JSON.stringify(obj);
 }
 
-// function addUser(data) {
-// 	// let flag;
-// 	const parseData = JSON.parse(data);
-// 	DB_RECORDS.forEach(ele => {
-// 		flag = false;
-// 		console.log(ele.id, parseData.id)
-// 		if (ele.id === parseData.id) {
-// 			return commonDisplay("200", "OK", 'id already exist..!');
-// 		} else if (ele.email == parseData.email) {
-// 			return commonDisplay("200", "OK", 'email already exist..!');
-// 		} else if (ele.contact == parseData.contact) {
-// 			return commonDisplay("200", "OK", 'contact already exist..!');
-// 		}
-// 		if (ele.id !== parseData.id) {
-// 			if (ele.email !== parseData.email) {
-// 				if (ele.contact !== parseData.contact) {
-// 					flag = true;
-// 				}
-// 			}
-// 		}
-// 	});
-// 	if (flag == true) {
-// 		DB_RECORDS.push(parseData);
-// 		fs.writeFile(DB_FILE, JSON.stringify(DB_RECORDS), function (err) {
-// 			if (err) return commonDisplay("502", "Error", err);
-// 		});
-// 		return commonDisplay("200", "OK", 'User added successfully..!');
-// 	}
-// }
-
 function addUser(data) {
 	const parseData = JSON.parse(data);
 	let msg;
+	console.log('DB_RECORDS', DB_RECORDS.length)
 	DB_RECORDS.forEach(ele => {
 		flag = false;
 		if (ele.id === parseData.id) {
@@ -68,9 +39,7 @@ function addUser(data) {
 	})
 	if (flag) {
 		userDataArray.push(parseData);
-		fs.writeFile(DB_FILE, JSON.stringify(userDataArray), function (err) {
-			if (err) return commonDisplay("502", "Error", err);
-		});
+		fs.writeFileSync(DB_FILE, JSON.stringify(userDataArray));
 		return commonDisplay(200, 'Ok', 'User added Successfully');
 	}
 	else {
@@ -78,18 +47,12 @@ function addUser(data) {
 	}
 }
 
-
 function deleteUser(data) {
-	DB_RECORDS.forEach((element) => {
-		if (element.id == data["id"]) {
-			userDataArray.splice(DB_RECORDS.indexOf(element), 1);
-			flag = 1;
-		}
-	});
-	if (flag == 1) {
-		fs.writeFile(DB_FILE, JSON.stringify(userDataArray), function (err) {
-			if (err) return commonDisplay("statusCode", "Error", err);
-		});
+	const userDelete = DB_RECORDS.splice(DB_RECORDS.findIndex(() => {
+		return data.id;
+	}), 1);
+	if (userDelete) {
+		fs.writeFileSync(DB_FILE, JSON.stringify(DB_RECORDS));
 		return commonDisplay("200", "OK", 'User Deleted Successfully..!');
 	}
 	else {
