@@ -18,9 +18,9 @@ function addUser(data) {
 	let msg;
 	DB_RECORDS.some((ele) => {
 		flag = false;
-		if (ele.id != parseData.id) {
-			if (ele.email != parseData.email) {
-				if (ele.contact != parseData.contact) {
+		if (ele.id != data.id) {
+			if (ele.email != data.email) {
+				if (ele.contact != data.contact) {
 					flag = true;
 				}
 				else {
@@ -36,7 +36,7 @@ function addUser(data) {
 		}
 	});
 	if (flag) {
-		DB_RECORDS.push(parseData);
+		DB_RECORDS.push(data);
 		fs.writeFileSync(DB_FILE, JSON.stringify(DB_RECORDS));
 		return commonDisplay(200, 'Ok', 'User added Successfully');
 	}
@@ -59,32 +59,18 @@ function deleteUser(data) {
 }
 
 function updateUser(data) {
+	const userKeys = ['userFirstName', 'userLastName', 'email', 'contact'];
 	const updateUserFlag = DB_RECORDS.some((dbElement) => {
 		if (dbElement.id == data.id) {
-			Object.keys(data).forEach((dataKey) => {
-				if (dataKey == 'userFirstName') {
-					if (data.userFirstName != "") {
-						dbElement.userFirstName = data.userFirstName;
-					}
-				}
-				if (dataKey == 'userLastName') {
-					if (data.userLastName != "") {
-						dbElement.userLastName = data.userLastName;
-					}
-				}
-				if (dataKey == 'email') {
-					if (data.email != "") {
-						dbElement.email = data.email;
-					}
-				}
-				if (dataKey == 'contact') {
-					if (data.contact != "") {
-						dbElement.contact = data.contact;
+			Object.keys(data).forEach(element => {
+				if (userKeys.find((ele) => { if (ele == element) return true; })) {
+					if (data[element] !== '') {
+						dbElement[element] = data[element];
 					}
 				}
 			});
-			return true;
 		}
+		return true;
 	});
 	if (updateUserFlag) {
 		fs.writeFileSync(DB_FILE, JSON.stringify(DB_RECORDS));
