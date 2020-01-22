@@ -19,7 +19,6 @@ function commonDisplay(statusCode, status, message, jsonData = "") {
 function addUser(data) {
 	const parseData = JSON.parse(data);
 	let msg;
-	console.log('DB_RECORDS', DB_RECORDS.length)
 	DB_RECORDS.forEach(ele => {
 		flag = false;
 		if (ele.id === parseData.id) {
@@ -61,7 +60,7 @@ function deleteUser(data) {
 }
 
 function updateUser(data) {
-	DB_RECORDS.forEach((dbElement) => {
+	const updateUserFlag = DB_RECORDS.some((dbElement) => {
 		if (dbElement.id == data.id) {
 			Object.keys(data).forEach((dataKey) => {
 				if (dataKey == 'userFirstName') {
@@ -85,14 +84,11 @@ function updateUser(data) {
 					}
 				}
 			});
-			flag = 1;
+			return true;
 		}
 	});
-	if (flag == 1) {
-		fs.writeFile(DB_FILE, JSON.stringify(userDataArray), function (err) {
-			if (err) return commonDisplay("502", "Error", err);
-
-		});
+	if (updateUserFlag) {
+		fs.writeFileSync(DB_FILE, JSON.stringify(userDataArray));
 		return commonDisplay("200", "OK", "User Updated successfully..!");
 	}
 	else {
@@ -101,13 +97,13 @@ function updateUser(data) {
 }
 
 function getUser(data) {
-	DB_RECORDS.forEach((element) => {
+	const getUser = DB_RECORDS.some((element) => {
 		if (element.id == data.id) {
 			userRecord = element;
-			flag = 1;
+			return userRecord;
 		}
 	});
-	if (flag == 1) {
+	if (getUser) {
 		return commonDisplay("200", "OK", "Data Found", userRecord);
 	}
 	else {
