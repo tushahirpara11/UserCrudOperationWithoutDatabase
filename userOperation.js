@@ -4,8 +4,6 @@ const DB_FILE = 'userData.json';
 let flag = 0, userRecord = '';
 const DB_RECORDS = JSON.parse(fs.readFileSync(DB_FILE));
 
-const userDataArray = DB_RECORDS.map((element) => { return element; });
-
 function commonDisplay(statusCode, status, message, jsonData = "") {
 	let obj = {
 		statusCode: statusCode,
@@ -17,28 +15,29 @@ function commonDisplay(statusCode, status, message, jsonData = "") {
 }
 
 function addUser(data) {
-	const parseData = JSON.parse(data);
 	let msg;
-	DB_RECORDS.forEach(ele => {
+	DB_RECORDS.some((ele) => {
 		flag = false;
-		if (ele.id === parseData.id) {
-			msg = 'id already exist..!';
-		} else if (ele.email == parseData.email) {
-			msg = 'email already exist..!';
-		} else if (ele.contact == parseData.contact) {
-			msg = 'contact already exist..!';
-		}
 		if (ele.id != parseData.id) {
 			if (ele.email != parseData.email) {
 				if (ele.contact != parseData.contact) {
 					flag = true;
 				}
+				else {
+					msg = 'contact already exist..!';
+				}
+			}
+			else {
+				msg = 'email already exist..!';
 			}
 		}
-	})
+		else {
+			msg = 'id already exist..!';
+		}
+	});
 	if (flag) {
-		userDataArray.push(parseData);
-		fs.writeFileSync(DB_FILE, JSON.stringify(userDataArray));
+		DB_RECORDS.push(parseData);
+		fs.writeFileSync(DB_FILE, JSON.stringify(DB_RECORDS));
 		return commonDisplay(200, 'Ok', 'User added Successfully');
 	}
 	else {
@@ -88,7 +87,7 @@ function updateUser(data) {
 		}
 	});
 	if (updateUserFlag) {
-		fs.writeFileSync(DB_FILE, JSON.stringify(userDataArray));
+		fs.writeFileSync(DB_FILE, JSON.stringify(DB_RECORDS));
 		return commonDisplay("200", "OK", "User Updated successfully..!");
 	}
 	else {
